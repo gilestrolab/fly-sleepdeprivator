@@ -42,14 +42,15 @@
  * Row 1: (16-01) 22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37
  * Row 2: (17-32) 38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53
  * 
- * 
+ * In windows, an easy way to make an upgrade without using the Arduino IDE is
+ * to adopt XLoader http://xloader.russemotto.com/
  * 
  */
 
 #include <Servo.h> 
 #include <SerialCommand.h>
 
-const String VERSION = "0.8";
+const String VERSION = "0.9";
 const int SERVO_NUMBER = 32;
 
 const int servoPINS[SERVO_NUMBER] = {37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,
@@ -60,7 +61,7 @@ SerialCommand sCmd; // The SerialCommand object
 
 
 int SHAKE = 2; // number of times the servo rotates
-int ROTATION_DELAY = 500; // pause between each motor movement
+int ROTATION_DELAY = 600; // pause between each motor movement
 int GROUP_SIZE = 4; // the size of the group of motors rotating at once
 
 boolean USE_SERVO = true;
@@ -82,8 +83,6 @@ void setup()
  Serial.begin(57600);
  
  setupSerialCommands();
- 
- if ( USE_SERVO ) { attachServos(); }//attach all servos
  
  if ( IR_ON ) {     
   digitalWrite(IR_LED_LEFT,HIGH);
@@ -221,18 +220,6 @@ boolean time_elapsed() {
 
 // ================= ROTATE FUNCTIONS ================== //
 
-void attachServos() {
-    //this function attaches all servos
-    //it's called at the beginning
-  
-  const int DELAY_BTWN_ATTACH = 250;
-  
-  for (int i = 0; i < SERVO_NUMBER; i++) {
-    servoarray[i].attach(servoPINS[i]);
-    delay(DELAY_BTWN_ATTACH);
-  }
-}
-
 void moveChannel() {
   //Move only the specified channel (1-SERVO_NUMBER)
   int channel;
@@ -259,6 +246,7 @@ void moveServo(int channel) {
   //move a single servo
   if ( USE_SERVO )
   {
+    servoarray[channel-1].attach(servoPINS[channel-1]);
     for( int s = 0; s < SHAKE; s++)
     {
       servoarray[channel-1].write(0);
@@ -266,6 +254,7 @@ void moveServo(int channel) {
       servoarray[channel-1].write(180);
       delay(ROTATION_DELAY);
     }
+    servoarray[channel-1].detach();
   }
   
 }  
@@ -287,15 +276,21 @@ void rotatesAll() {
 
 void moveServoGroup(int bat[]) {
     //move a group of servo
-    //bat is an array containing the channels to be moved
+    //bat is an array containing the channels to be moved, 1-32 (e.g: 1,2,3,4)
+
+  const int DELAY_BTWN_ATTACH = 10;
   
   if ( DEBUG_MODE ) { 
     
-    Serial.print("Moving: ");
     for (int i = 0; i<GROUP_SIZE; i++) {
-      Serial.print(String(bat[i]) + " ");
+      Serial.print("Moving channel:" + String(bat[i]) + " ");
+      Serial.println(" with PIN: " + String(servoPINS[bat[i]-1]));
     }
-    Serial.println("");
+  }
+  
+  for (int i = 0; i < GROUP_SIZE; i++) {
+    servoarray[bat[i]-1].attach(servoPINS[bat[i]-1]);
+    //delay(DELAY_BTWN_ATTACH);
   }
   
   for( int s = 0; s < SHAKE; s++)
@@ -310,6 +305,13 @@ void moveServoGroup(int bat[]) {
     }
     delay(ROTATION_DELAY);
   }
+  
+  for (int i = 0; i < GROUP_SIZE; i++) {
+    servoarray[bat[i]-1].detach();
+    //delay(DELAY_BTWN_ATTACH);
+  }
+  
+  
 }
 
 // ================= PRINT FUNCTIONS ================== //
