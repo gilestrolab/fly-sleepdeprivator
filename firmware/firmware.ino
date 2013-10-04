@@ -84,6 +84,9 @@ void setup()
  
  setupSerialCommands();
  
+ pinMode(IR_LED_LEFT, OUTPUT);      // sets the digital pin as output
+ pinMode(IR_LED_RIGHT, OUTPUT);
+ 
  if ( IR_ON ) {     
   digitalWrite(IR_LED_LEFT,HIGH);
   digitalWrite(IR_LED_RIGHT,HIGH); 
@@ -102,13 +105,16 @@ void irLed(){
   arg = sCmd.next();
   int status = atoi(arg);
   
+  
   if( status == 1) {
     digitalWrite(IR_LED_LEFT,HIGH);
     digitalWrite(IR_LED_RIGHT,HIGH);
+    Serial.println("ON " + String(status));
   }  
   else if ( status == 0) {
     digitalWrite(IR_LED_LEFT,LOW);
     digitalWrite(IR_LED_RIGHT,LOW);
+    Serial.println("OFF " + String(status));
   }
   listValues();
 }
