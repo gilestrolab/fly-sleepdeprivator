@@ -50,11 +50,17 @@
 #include <Servo.h> 
 #include <SerialCommand.h>
 
-const String VERSION = "0.9";
+const String VERSION = "0.97";
 const int SERVO_NUMBER = 32;
 
-const int servoPINS[SERVO_NUMBER] = {37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,
-                                     38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53};
+/* 32 --- 17
+ * 16 --- 01
+ * const int servoPINS[SERVO_NUMBER] = {37,36,35,34,33,32,31,30, 29,28,27,26,25,24,23,22,
+ *                                    38,39,40,41,42,43,44,45, 46,47,48,49,50,51,52,53};
+ */
+
+const int servoPINS[SERVO_NUMBER] = {37,38,36,39,35,40,34,41,33,42,32,43,31,44,30,45,
+                                     29,46,28,47,27,48,26,49,25,50,24,51,23,52,22,53};
 
 Servo servoarray[SERVO_NUMBER];
 SerialCommand sCmd; // The SerialCommand object
@@ -67,57 +73,29 @@ int GROUP_SIZE = 4; // the size of the group of motors rotating at once
 boolean USE_SERVO = true;
 boolean DEBUG_MODE = false;
 
-boolean AUTO_MODE = true; // set this to TRUE to use it without PC connected
+boolean AUTO_MODE = false; // set this to TRUE to use it without PC connected
 int rMIN = 1; // default minimal value for RANDOM rotations in AUTO mode
 int rMAX = 7; // default maximum value for RANDOM rotations in AUTO mode
 
 int lap = 1; // used internally
 unsigned long pTime = 0; // used internally
 
-boolean IR_ON = true; //starts with LEDS on (1) or off (0)
-const int IR_LED_LEFT = 6; //pin for LED LEFT
-const int IR_LED_RIGHT = 7; //pin for LED RIGHT
 
 void setup() 
 { 
  Serial.begin(57600);
  
- setupSerialCommands();
- 
- pinMode(IR_LED_LEFT, OUTPUT);      // sets the digital pin as output
- pinMode(IR_LED_RIGHT, OUTPUT);
- 
- if ( IR_ON ) {     
-  digitalWrite(IR_LED_LEFT,HIGH);
-  digitalWrite(IR_LED_RIGHT,HIGH); 
+ if (Serial) {
+    setupSerialCommands();
+    Serial.println("Ready.");
+    }
+    else
+    {
+    AUTO_MODE = true;
+    }
+
 }
 
-Serial.println("Ready.");
-}
-
-
-// ================= VARIOUS FUNCTIONS ================== //
-
-void irLed(){
-  //Switches IR LEDs on and off.
-  
-  char *arg;
-  arg = sCmd.next();
-  int status = atoi(arg);
-  
-  
-  if( status == 1) {
-    digitalWrite(IR_LED_LEFT,HIGH);
-    digitalWrite(IR_LED_RIGHT,HIGH);
-    Serial.println("ON " + String(status));
-  }  
-  else if ( status == 0) {
-    digitalWrite(IR_LED_LEFT,LOW);
-    digitalWrite(IR_LED_RIGHT,LOW);
-    Serial.println("OFF " + String(status));
-  }
-  listValues();
-}
 
 
 // ================= CHANGE DEFAULT VALUES FUNCTIONS ================== //
@@ -336,7 +314,6 @@ void setupSerialCommands() {
  sCmd.addCommand("DEBUG",  toggleDEBUGMODE); // Start autoMode (keep rotating at random intervals of xx-yy minutes)
 
  sCmd.addCommand("ST",    rotatesAll); //rotates all at once
- sCmd.addCommand("IR",    irLed); //Swith on (IR 1) or off (IR 0) IR leds, 
 
  sCmd.setDefaultHandler(printError);      // Handler for command that isn't matched  (says "What?")
 }
@@ -351,7 +328,6 @@ void printHelp() {
   Serial.println("L                 List currently set values");
   Serial.println("M xx              Moves Channel xx (1-SERVO_NUMBER)");
   Serial.println("ST                Rotate all servos in groups of xx");
-  Serial.println("IR 1|0            Switches Infrared LEDs On or Off");
   Serial.println("HELP              Print this help message");
   Serial.println("=================================================================================");
 }
@@ -368,18 +344,8 @@ void listValues(){
   Serial.println("RANDOM intervals: " + String(rMIN) + " - " + String(rMAX) );
   Serial.println("Rotation delay: " + String(ROTATION_DELAY) );
   Serial.println("Voltage: " + String(analogRead(0)));
-  printLEDstatus();
   Serial.println("=================================================================================");
 }
-
-void printLEDstatus(){
-
-  String state[3] = {"OFF","LED ERROR!","ON"};
-  
-  int o = digitalRead(IR_LED_LEFT) + digitalRead(IR_LED_RIGHT);
-  Serial.println("IR LEDs: " + state[o]);
-}
-
 
 void printError(const char *command) {
   // This gets set as the default handler, and gets called when no other command matches.
@@ -389,7 +355,9 @@ void printError(const char *command) {
 void loop()
 {
 
-  sCmd.readSerial(); 
+  if (Serial) {
+    sCmd.readSerial(); 
+  }
 
   if ( AUTO_MODE and time_elapsed() ) {
     lap = get_new_interval();
