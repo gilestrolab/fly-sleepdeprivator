@@ -3,6 +3,12 @@ fly-sleepdeprivator
 
 Firmware and software for the fly sleep deprivator of the Gilestro laboratory @ ICL
 
+REQUIREMENTS
+Arduino 1.0+  - http://arduino.cc
+SerialCommand - http://github.com/kroimon/Arduino-SerialCommand
+
+pySerial      - http://pyserial.sourceforge.net/
+pySolo-Video  - http://github.com/gilestrolab/pySolo-Video
 
 What's NEW
 
