@@ -162,10 +162,10 @@ class SDrealtime(DAMrealtime):
         #isSDMonitor = int(header[6])
         #monitorNumber = int(header[7])
 
-        activity = np.array( [ line.split('\t')[10:] for line in lastlines ], dtype=np.int )
-        
+       
         if trackType == 0: #Actual Distance
 
+                activity = np.array( [ line.split('\t')[10:] for line in lastlines ], dtype=np.int )
                 dead_threshold = 50
                 asleep_threshold = 10 * interval
 
@@ -177,6 +177,7 @@ class SDrealtime(DAMrealtime):
                 
         elif trackType == 1: #Virtual Beam Crossing
 
+                activity = np.array( [ line.split('\t')[10:] for line in lastlines ], dtype=np.int )
                 dead_threshold = 50
                 asleep_threshold = 10 * interval
 
@@ -191,7 +192,7 @@ class SDrealtime(DAMrealtime):
                 
         elif trackType == 2: # Position of flies
                 sleepDep = 0
-                os.sys.exit("SD with position of flies is not yet implemented!!!")
+                os.sys.exit("FATAL ERROR. SD with position of flies is not yet implemented!")
         
         return sleepDep
 
@@ -212,7 +213,6 @@ class SDrealtime(DAMrealtime):
         cmd = ['M %02d' % (channel+1) for (channel,sleeping) in enumerate(flies) if sleeping] 
         
         return '\n'.join(cmd)
-
 
             
 class ENVrealtime(DAMrealtime):
