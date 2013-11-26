@@ -28,28 +28,17 @@ from datetime import datetime as dt
 import serial, optparse
 __version__ = '0.2'
 
-usage =  '%prog [options] [argument]\n'
-version= '%prog version ' + str(__version__)
+LAG = 5
+BAUD = 57600
+DEFAULT_PORT = '/dev/ttyACM0'
 
-parser = optparse.OptionParser(usage=usage, version=version )
-parser.add_option('-p', '--port', dest='port', metavar="/dev/ttyXXX", help="Specifies the serial port to which the SD is connected. Default /dev/ttyACM0")
-parser.add_option('-d', '--d', dest='path', metavar="/path/to/data/", help="Specifies the path to the monitor to be sleep deprived. If a folder is given, all monitors inside will be sleep deprived.")
-parser.add_option('--simulate', action="store_false", default=True, dest='use_serial', help="Simulate action only")
-parser.add_option('--daemon', action="store_true", default=False, dest='daemon_mode', help="Run in daemon mode")
-
-(options, args) = parser.parse_args()
-
-port = options.port or '/dev/ttyACM0'
-use_serial = options.use_serial
-path = options.path
-lag = 5
-
-def start():
+def start(path, use_serial=True, port=DEFAULT_PORT, baud=BAUD):
     """
+    Sleep deprivation routine
     """
 
     if use_serial: 
-        ser = serial.Serial(port, 57600)
+        ser = serial.Serial(port, BAUD)
         sleep(2)
 
     r = SDrealtime(path=path)
@@ -67,13 +56,26 @@ def start():
 
 if __name__ == '__main__':
 
-    if options.daemon_mode:
-        print "Starting daemon mode"
-        print "Running every %s minutes" % lag
-        while True:
-            start()
-            sleep(lag*60)
-    else:
-        start()
 
+    usage =  '%prog [options] [argument]\n'
+    version= '%prog version ' + str(__version__)
+
+    parser = optparse.OptionParser(usage=usage, version=version )
+    parser.add_option('-p', '--port', dest='port', metavar="/dev/ttyXXX", default=DEFAULT_PORT, help="Specifies the serial port to which the SD is connected. Default /dev/ttyACM0")
+    parser.add_option('-d', '--d', dest='path', metavar="/path/to/data/", help="Specifies the path to the monitor to be sleep deprived. If a folder is given, all monitors inside will be sleep deprived.")
+    parser.add_option('--simulate', action="store_false", default=True, dest='use_serial', help="Simulate action only")
+    parser.add_option('--daemon', action="store_true", default=False, dest='daemon_mode', help="Run in daemon mode (continously every 5 minutes)")
+
+    (options, args) = parser.parse_args()
+
+    if options.daemon_mode and options.path:
+        print "Starting daemon mode"
+        print "Running every %s minutes. Enter Ctrl-C to terminate." % LAG
+        while True:
+            start(options.path, options.use_serial, options.port)
+            sleep(LAG*60)
+    elif options.path and not options.daemon_mode:
+        start(options.path, options.use_serial, options.port)
+    else:
+        parser.print_help()
 
