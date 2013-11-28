@@ -32,6 +32,36 @@ LAG = 5
 BAUD = 57600
 DEFAULT_PORT = '/dev/ttyACM0'
 
+def checkNewVersion(port=DEFAULT_PORT, baud=BAUD):
+    """
+    """
+    from urllib import urlopen
+    
+    r = ""
+    current_version = 0
+    ser = serial.Serial(port, BAUD)
+    sleep(2)
+    ser.write("L\n")
+    sleep(2)
+    r = ser.readline()
+    print r
+
+    for i in r:
+        if "Version" in i: current_version = i.split(": ")[1]
+        
+    webaddress = 'http://www.pysolo.net/sleep_deprivator_last_version.txt'
+    try:
+        new_version = urlopen(webaddress).read().rstrip('\n')
+    except:
+        new_version = '0.0'
+      
+    if new_version > current_version:
+        print "A new version of the sleep deprivator firmware was found! Please update to %s" % new_version
+    else:
+        print "You are already running the latest version"
+
+    os.sys.exit()
+
 def start_automatic(port=DEFAULT_PORT, baud=BAUD, use_serial=True):
     """
     Sleep deprivation in automatic mode, without input from
@@ -81,8 +111,12 @@ if __name__ == '__main__':
     parser.add_option('--simulate', action="store_false", default=True, dest='use_serial', help="Simulate action only")
     parser.add_option('--daemon', action="store_true", default=False, dest='daemon_mode', help="Run in daemon mode (continously every 5 minutes)")
     parser.add_option('--automatic', action="store_true", default=False, dest='automatic_mode', help="Activate automatic mode")
+    parser.add_option('--checkVersion', action="store_true", default=False, dest='check_version', help="Check if a new version of the software is available. Internet connection needed.")
 
     (options, args) = parser.parse_args()
+
+    if options.check_version:
+        checkNewVersion(options.port)
 
     if options.daemon_mode and options.path:
         print "Starting daemon mode"
