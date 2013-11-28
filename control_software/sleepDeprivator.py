@@ -41,13 +41,14 @@ def checkNewVersion(port=DEFAULT_PORT, baud=BAUD):
     current_version = 0
     ser = serial.Serial(port, BAUD)
     sleep(2)
+    ser.flushInput()
+    
     ser.write("L\n")
     sleep(2)
     r = ser.readline()
-    print r
-
-    for i in r:
-        if "Version" in i: current_version = i.split(": ")[1]
+    current_version = r.split(": ")[1]
+    #for i in r:
+    #    if "Version" in i: current_version = i.split(": ")[1]
         
     webaddress = 'http://www.pysolo.net/sleep_deprivator_last_version.txt'
     try:
@@ -58,9 +59,7 @@ def checkNewVersion(port=DEFAULT_PORT, baud=BAUD):
     if new_version > current_version:
         print "A new version of the sleep deprivator firmware was found! Please update to %s" % new_version
     else:
-        print "You are already running the latest version"
-
-    os.sys.exit()
+        print "You are already running the latest version %s" % current_version
 
 def start_automatic(port=DEFAULT_PORT, baud=BAUD, use_serial=True):
     """
@@ -115,9 +114,6 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    if options.check_version:
-        checkNewVersion(options.port)
-
     if options.daemon_mode and options.path:
         print "Starting daemon mode"
         print "Running every %s minutes. Enter Ctrl-C to terminate." % LAG
@@ -128,6 +124,8 @@ if __name__ == '__main__':
         start(options.path, options.use_serial, options.port)
     elif options.automatic_mode:
         start_automatic(options.port, use_serial=options.use_serial)
+    elif options.check_version:
+        checkNewVersion(options.port)
     else:
         parser.print_help()
 
