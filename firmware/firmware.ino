@@ -50,7 +50,7 @@
 #include <Servo.h> 
 #include <SerialCommand.h>
 
-const String VERSION = "0.97";
+const String VERSION = "0.98";
 const int SERVO_NUMBER = 32;
 
 /* 32 --- 17
@@ -83,16 +83,10 @@ unsigned long pTime = 0; // used internally
 
 void setup() 
 { 
+
  Serial.begin(57600);
- 
- if (Serial) {
-    setupSerialCommands();
-    Serial.println("Ready.");
-    }
-    else
-    {
-    AUTO_MODE = true;
-    }
+ setupSerialCommands();
+ Serial.println("Ready.");
 
 }
 
@@ -355,9 +349,7 @@ void printError(const char *command) {
 void loop()
 {
 
-  if (Serial) {
-    sCmd.readSerial(); 
-  }
+  sCmd.readSerial(); 
 
   if ( AUTO_MODE and time_elapsed() ) {
     lap = get_new_interval();

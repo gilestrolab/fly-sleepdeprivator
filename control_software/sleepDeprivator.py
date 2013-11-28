@@ -32,6 +32,21 @@ LAG = 5
 BAUD = 57600
 DEFAULT_PORT = '/dev/ttyACM0'
 
+def start_automatic(port=DEFAULT_PORT, baud=BAUD, use_serial=True):
+    """
+    Sleep deprivation in automatic mode, without input from
+    pySolo-Video
+    """
+
+    if use_serial:
+        ser = serial.Serial(port, BAUD)
+        sleep(2)
+        ser.write("AUTO\n")
+        print Serial.read()
+    else:
+        print ("AUTO\n")
+        
+
 def start(path, use_serial=True, port=DEFAULT_PORT, baud=BAUD):
     """
     Sleep deprivation routine
@@ -65,6 +80,7 @@ if __name__ == '__main__':
     parser.add_option('-d', '--d', dest='path', metavar="/path/to/data/", help="Specifies the path to the monitor to be sleep deprived. If a folder is given, all monitors inside will be sleep deprived.")
     parser.add_option('--simulate', action="store_false", default=True, dest='use_serial', help="Simulate action only")
     parser.add_option('--daemon', action="store_true", default=False, dest='daemon_mode', help="Run in daemon mode (continously every 5 minutes)")
+    parser.add_option('--automatic', action="store_true", default=False, dest='automatic_mode', help="Activate automatic mode")
 
     (options, args) = parser.parse_args()
 
@@ -74,8 +90,10 @@ if __name__ == '__main__':
         while True:
             start(options.path, options.use_serial, options.port)
             sleep(LAG*60)
-    elif options.path and not options.daemon_mode:
+    elif options.path and not options.daemon_mode and not options.automatic_mode:
         start(options.path, options.use_serial, options.port)
+    elif options.automatic_mode:
+        start_automatic(options.port, use_serial=options.use_serial)
     else:
         parser.print_help()
 
