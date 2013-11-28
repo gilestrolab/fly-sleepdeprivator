@@ -50,7 +50,7 @@
 #include <Servo.h> 
 #include <SerialCommand.h>
 
-const String VERSION = "0.98";
+const String VERSION = "0.99";
 const int SERVO_NUMBER = 32;
 
 /* 32 --- 17

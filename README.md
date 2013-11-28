@@ -16,3 +16,8 @@ What's NEW
 * Changed the order of the tubes to reflect the mask in pySolo-Video
 * Auto mode will start automatically when the arduino is not connected to the computer
 * IR LEDs are not longer controlled by the ARDUINO
+
+*Version 0.99
+* Auto mode will not start automatically because MEGA cannot detect if Serial port is connected or not.
+* The sleepdeprivator script will be able to start auto mode
+* added support for online check of new version
