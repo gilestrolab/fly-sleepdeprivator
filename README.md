@@ -21,3 +21,4 @@ What's NEW
 * Auto mode will not start automatically because MEGA cannot detect if Serial port is connected or not.
 * The sleepdeprivator script will be able to start auto mode
 * added support for online check of new version
+* Added LED status for auto On or Off on LED 13
