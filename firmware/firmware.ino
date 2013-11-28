@@ -80,6 +80,7 @@ int rMAX = 7; // default maximum value for RANDOM rotations in AUTO mode
 int lap = 1; // used internally
 unsigned long pTime = 0; // used internally
 
+int LED = 13; //status LED
 
 void setup() 
 { 
@@ -88,6 +89,7 @@ void setup()
  setupSerialCommands();
  Serial.println("Ready.");
 
+ pinMode(LED, OUTPUT);
 }
 
 
@@ -109,6 +111,7 @@ void toggleAUTOMODE(){
   //Set Automode ON or OFF
   //
   AUTO_MODE = not AUTO_MODE;
+  digitalWrite(LED, AUTO_MODE);
   listValues();
 }
 

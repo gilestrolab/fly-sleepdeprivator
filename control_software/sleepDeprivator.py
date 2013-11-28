@@ -26,7 +26,7 @@ from DAMrealtime import SDrealtime
 from time import sleep
 from datetime import datetime as dt
 import serial, optparse
-__version__ = '0.2'
+__version__ = '0.3'
 
 LAG = 5
 BAUD = 57600
@@ -71,7 +71,7 @@ def start_automatic(port=DEFAULT_PORT, baud=BAUD, use_serial=True):
         ser = serial.Serial(port, BAUD)
         sleep(2)
         ser.write("AUTO\n")
-        print Serial.read()
+        print "Now running in auto mode"
     else:
         print ("AUTO\n")
         
