@@ -25,12 +25,31 @@
 from DAMrealtime import SDrealtime
 from time import sleep
 from datetime import datetime as dt
-import serial, optparse
+
+import os
+import optparse
+
+import serial 
+from serial.tools import list_ports
+
 __version__ = '0.3'
 
 LAG = 5
 BAUD = 57600
 DEFAULT_PORT = '/dev/ttyACM0'
+
+def ping(port=DEFAULT_PORT, baud=BAUD):
+    """
+    is the machine alive?
+    """
+    try:
+        ser = serial.Serial(port, BAUD)
+        sleep(2)
+        ser.write("L\n")    
+        r = ser.readline()
+        return True
+    except:
+        return False
 
 def checkNewVersion(port=DEFAULT_PORT, baud=BAUD):
     """
@@ -50,9 +69,11 @@ def checkNewVersion(port=DEFAULT_PORT, baud=BAUD):
     #for i in r:
     #    if "Version" in i: current_version = i.split(": ")[1]
         
-    webaddress = 'http://www.pysolo.net/sleep_deprivator_last_version.txt'
+    webaddress = 'https://raw2.github.com/gilestrolab/fly-sleepdeprivator/master/control_software/sleepdeprivator.py'
     try:
-        new_version = urlopen(webaddress).read().rstrip('\n')
+        pg = urlopen(webaddress).read()
+        ix = p.find("__version__ = '") + len("__version__= '")
+        new_version = pg[ix:ix+3]
     except:
         new_version = '0.0'
       
@@ -76,6 +97,30 @@ def start_automatic(port=DEFAULT_PORT, baud=BAUD, use_serial=True):
         print ("AUTO\n")
         
 
+def serialPorts():
+    """
+    Returns a generator for all available serial ports
+    """
+    if os.name == 'nt':
+        # windows
+        for i in range(256):
+            try:
+                s = serial.Serial(i)
+                s.close()
+                yield 'COM' + str(i + 1)
+            except serial.SerialException:
+                pass
+    else:
+        # unix
+        for port in list_ports.comports():
+            yield port[0]
+
+def listSerialPorts():
+    """
+    """
+
+    return list(serialPorts())
+
 def start(path, use_serial=True, port=DEFAULT_PORT, baud=BAUD):
     """
     Sleep deprivation routine
@@ -98,6 +143,32 @@ def start(path, use_serial=True, port=DEFAULT_PORT, baud=BAUD):
 
     if use_serial: ser.close()
 
+def deprive(channels, use_serial=True, port=DEFAULT_PORT, baud=BAUD):
+    """
+    Deprive single channels
+    """
+    
+    cmd = ""
+    
+    if use_serial: 
+        ser = serial.Serial(port, BAUD)
+        sleep(2)
+    
+    cmd = '\n'.join(['M %02d' % (c+1) for c in channels])
+
+    print "sent command to port %s" % port
+    print cmd
+
+    
+    if cmd and use_serial:
+        ser.write(cmd)
+        
+    if use_serial: ser.close()        
+    
+    if not use_serial:
+        print "Debug mode"
+        print "I would have sent the following command: %s" % cmd
+
 if __name__ == '__main__':
 
 
@@ -111,6 +182,7 @@ if __name__ == '__main__':
     parser.add_option('--daemon', action="store_true", default=False, dest='daemon_mode', help="Run in daemon mode (continously every 5 minutes)")
     parser.add_option('--automatic', action="store_true", default=False, dest='automatic_mode', help="Activate automatic mode")
     parser.add_option('--checkVersion', action="store_true", default=False, dest='check_version', help="Check if a new version of the software is available. Internet connection needed.")
+    parser.add_option('--listports', action="store_true", default=False, dest='list_ports', help="List all serial ports available in the system")
 
     (options, args) = parser.parse_args()
 
@@ -126,6 +198,8 @@ if __name__ == '__main__':
         start_automatic(options.port, use_serial=options.use_serial)
     elif options.check_version:
         checkNewVersion(options.port)
+    elif options.list_ports:
+        print listSerialPorts()
     else:
         parser.print_help()
 
