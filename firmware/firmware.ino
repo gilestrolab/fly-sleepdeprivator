@@ -87,6 +87,17 @@ void setup()
 
  Serial.begin(57600);
  setupSerialCommands();
+ Serial.println("Cleaning servos, wait..");
+ 
+ for (int i=0; i<32; i++){
+   pinMode(servoPINS[i],OUTPUT);
+   servoarray[i].attach(servoPINS[i]);
+   Serial.println(servoarray[i].read());
+   servoarray[i].write(90);
+   delay(ROTATION_DELAY);
+   servoarray[i].detach();
+ }
+ 
  Serial.println("Ready.");
 
  pinMode(LED, OUTPUT);
@@ -230,9 +241,11 @@ void moveServo(int channel) {
     servoarray[channel-1].attach(servoPINS[channel-1]);
     for( int s = 0; s < SHAKE; s++)
     {
-      servoarray[channel-1].write(0);
+      servoarray[channel-1].write(2);
       delay(ROTATION_DELAY);
-      servoarray[channel-1].write(180);
+      servoarray[channel-1].write(178);
+      delay(ROTATION_DELAY);
+      servoarray[channel-1].write(90);
       delay(ROTATION_DELAY);
     }
     servoarray[channel-1].detach();
@@ -277,12 +290,16 @@ void moveServoGroup(int bat[]) {
   for( int s = 0; s < SHAKE; s++)
   {
     for (int i = 0; i<GROUP_SIZE; i++) {
-      servoarray[bat[i]-1].write(0);
+      servoarray[bat[i]-1].write(2);
     }
     delay(ROTATION_DELAY);
 
     for (int i = 0; i<GROUP_SIZE; i++) {
-      servoarray[bat[i]-1].write(180);
+      servoarray[bat[i]-1].write(178);
+    }
+    delay(ROTATION_DELAY);
+    for (int i = 0; i<GROUP_SIZE; i++) {
+      servoarray[bat[i]-1].write(90);
     }
     delay(ROTATION_DELAY);
   }
