@@ -32,7 +32,7 @@ import optparse
 import serial 
 from serial.tools import list_ports
 
-__version__ = '0.3'
+__version__ = '0.4'
 
 LAG = 5
 BAUD = 57600

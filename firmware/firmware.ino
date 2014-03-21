@@ -52,6 +52,8 @@
 
 const String VERSION = "0.99";
 const int SERVO_NUMBER = 32;
+const int LEFT_POSITION = 0;
+const int RIGHT_POSITION = 178;
 
 /* 32 --- 17
  * 16 --- 01
@@ -87,17 +89,8 @@ void setup()
 
  Serial.begin(57600);
  setupSerialCommands();
- Serial.println("Cleaning servos, wait..");
- 
- for (int i=0; i<32; i++){
-   pinMode(servoPINS[i],OUTPUT);
-   servoarray[i].attach(servoPINS[i]);
-   Serial.println(servoarray[i].read());
-   servoarray[i].write(90);
-   delay(ROTATION_DELAY);
-   servoarray[i].detach();
- }
- 
+
+ resetPosition();
  Serial.println("Ready.");
 
  pinMode(LED, OUTPUT);
@@ -212,6 +205,21 @@ boolean time_elapsed() {
 
 // ================= ROTATE FUNCTIONS ================== //
 
+
+void resetPosition(){
+ Serial.println("Cleaning servos. Wait..");
+ 
+ for (int i=0; i<SERVO_NUMBER; i++){
+   pinMode(servoPINS[i],OUTPUT);
+   servoarray[i].attach(servoPINS[i]);
+   Serial.println(servoarray[i].read());
+   servoarray[i].write(90);
+   delay(ROTATION_DELAY);
+   servoarray[i].detach();
+ }
+}
+
+
 void moveChannel() {
   //Move only the specified channel (1-SERVO_NUMBER)
   int channel;
@@ -241,9 +249,9 @@ void moveServo(int channel) {
     servoarray[channel-1].attach(servoPINS[channel-1]);
     for( int s = 0; s < SHAKE; s++)
     {
-      servoarray[channel-1].write(2);
+      servoarray[channel-1].write(LEFT_POSITION);
       delay(ROTATION_DELAY);
-      servoarray[channel-1].write(178);
+      servoarray[channel-1].write(RIGHT_POSITION);
       delay(ROTATION_DELAY);
       servoarray[channel-1].write(90);
       delay(ROTATION_DELAY);
@@ -290,12 +298,12 @@ void moveServoGroup(int bat[]) {
   for( int s = 0; s < SHAKE; s++)
   {
     for (int i = 0; i<GROUP_SIZE; i++) {
-      servoarray[bat[i]-1].write(2);
+      servoarray[bat[i]-1].write(LEFT_POSITION);
     }
     delay(ROTATION_DELAY);
 
     for (int i = 0; i<GROUP_SIZE; i++) {
-      servoarray[bat[i]-1].write(178);
+      servoarray[bat[i]-1].write(RIGHT_POSITION);
     }
     delay(ROTATION_DELAY);
     for (int i = 0; i<GROUP_SIZE; i++) {
