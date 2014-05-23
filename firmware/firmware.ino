@@ -70,12 +70,13 @@ SerialCommand sCmd; // The SerialCommand object
 
 int SHAKE = 2; // number of times the servo rotates
 int ROTATION_DELAY = 600; // pause between each motor movement
-int GROUP_SIZE = 4; // the size of the group of motors rotating at once
+int GROUP_SIZE = 8; // the size of the group of motors rotating at once
 
 boolean USE_SERVO = true;
+boolean NEW_SERVO = true;
 boolean DEBUG_MODE = false;
 
-boolean AUTO_MODE = false; // set this to TRUE to use it without PC connected
+boolean AUTO_MODE = true; // set this to TRUE to use it without PC connected
 int rMIN = 1; // default minimal value for RANDOM rotations in AUTO mode
 int rMAX = 7; // default maximum value for RANDOM rotations in AUTO mode
 
@@ -90,10 +91,13 @@ void setup()
  Serial.begin(57600);
  setupSerialCommands();
 
- resetPosition();
+ if ( NEW_SERVO ) {
+    resetPosition() ;
+ }
+ pinMode(LED, OUTPUT);
+
  Serial.println("Ready.");
 
- pinMode(LED, OUTPUT);
 }
 
 
@@ -203,15 +207,34 @@ boolean time_elapsed() {
   return (time - pTime >= lap*60000);
 }
 
+unsigned long remaining_time() {
+  unsigned long time = millis();
+  return ( (lap*60000  - (time - pTime)) / 1000 );
+}
+    
+
 // ================= ROTATE FUNCTIONS ================== //
 
 
 void resetPosition(){
+
+//Modified by Luis with commit  c995f6bc95ab71e46feb9ec187e970505ed5a460 
+//Not sure this is right though
+//Attach some servos to prevent the servo blocking state
+
+ for (int i=0; i<SERVO_NUMBER-15; i++){
+    pinMode(servoPINS[i],OUTPUT);
+    servoarray[i].attach(servoPINS[i], 740, 2250);
+    servoarray[i].write(90);
+    Serial.println(servoarray[i].read());
+}
+   
  Serial.println("Cleaning servos. Wait..");
  
  for (int i=0; i<SERVO_NUMBER; i++){
    pinMode(servoPINS[i],OUTPUT);
-   servoarray[i].attach(servoPINS[i]);
+   servoarray[i].detach();
+   servoarray[i].attach(servoPINS[i], 740, 2250);
    Serial.println(servoarray[i].read());
    servoarray[i].write(90);
    delay(ROTATION_DELAY);
@@ -366,6 +389,7 @@ void listValues(){
   Serial.println("RANDOM intervals: " + String(rMIN) + " - " + String(rMAX) );
   Serial.println("Rotation delay: " + String(ROTATION_DELAY) );
   Serial.println("Voltage: " + String(analogRead(0)));
+  Serial.println("Next rotation in : " + String(remaining_time()));
   Serial.println("=================================================================================");
 }
 
