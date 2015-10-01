@@ -22,7 +22,13 @@ Giorgio Gilestro, 2015
 // pin for mosfet
 const int mosfetA = 16; //A1
 const int mosfetB = 17; //A2
+
+//SD_PULSE regulates the duration of the shaking pulse 
+const int MIN_SD_PULSE = 5; //in seconds
 const int MAX_SD_PULSE = 20; //in seconds
+
+//SD_PAUSE regulates the pause between pulses
+const int MIN_SD_PAUSE = 1; //in minutes
 const int MAX_SD_PAUSE = 7; //in minutes
 
 
@@ -203,7 +209,7 @@ void random_pulse(bool status)
   {
     SD_vibrate = true;
     SD_A = now();
-    SD_AB = random (5, MAX_SD_PULSE);
+    SD_AB = random (MIN_SD_PULSE, MAX_SD_PULSE);
     next_action = now() + SD_AB;
 
     lcd.setCursor(13,0);
@@ -216,7 +222,7 @@ void random_pulse(bool status)
   {
     SD_vibrate = false;
     SD_B = now();
-    SD_BC = random (1, MAX_SD_PAUSE ) * 60; 
+    SD_BC = random (MIN_SD_PAUSE, MAX_SD_PAUSE ) * 60; 
     next_action = now() + SD_BC;
 
     lcd.setCursor(13,0);
