@@ -1,7 +1,7 @@
 fly-sleepdeprivator
 ===================
 
-Firmware and software for the fly sleep deprivator of the Gilestro laboratory @ ICL
+Firmware and software for a shaker based fly sleep deprivator
 
 REQUIREMENTS
 
